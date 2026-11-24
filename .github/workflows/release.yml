@@ -1,0 +1,19 @@
+name: Publish rock
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y luarocks lua-dkjson zip
+      - name: Upload matching rockspec and source rock
+        env:
+          LUAROCKS_TOKEN: ${{ secrets.LUAROCKS_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          luarocks upload "lua-resty-brotli-${RELEASE_TAG#v}-1.rockspec" --api-key="$LUAROCKS_TOKEN"
